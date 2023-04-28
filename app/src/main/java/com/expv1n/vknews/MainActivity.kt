@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.expv1n.vknews.ui.theme.MainScreen
 import com.expv1n.vknews.ui.theme.PostCard
 import com.expv1n.vknews.ui.theme.VkNewsTheme
 
@@ -21,7 +22,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    PostCard()
+                    MainScreen()
                 }
             }
         }
