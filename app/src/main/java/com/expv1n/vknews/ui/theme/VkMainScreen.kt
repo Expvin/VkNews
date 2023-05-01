@@ -1,58 +1,38 @@
 package com.expv1n.vknews.ui.theme
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.SwipeToDismiss
+import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import kotlinx.coroutines.launch
+import androidx.compose.ui.unit.dp
+import com.expv1n.vknews.MainViewModel
+import com.expv1n.vknews.domain.StatisticItem
 
+
+@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainScreen() {
-    val snackBarHostState = SnackbarHostState()
-    val scope = rememberCoroutineScope()
-    val fabIsVisible = remember { mutableStateOf(true) }
+fun MainVkNewsScreen(viewModel: MainViewModel) {
 
     Scaffold(
-        snackbarHost = {
-            SnackbarHost(hostState = snackBarHostState)
-        },
-        floatingActionButton = {
-            if (fabIsVisible.value) {
-                FloatingActionButton(onClick = {
-                    scope.launch {
-                        val action = snackBarHostState.showSnackbar(
-                            message = "Snack bar",
-                            actionLabel = "Hide FAB",
-                            duration = SnackbarDuration.Long
-                        )
-                        if (action == SnackbarResult.ActionPerformed) {
-                            fabIsVisible.value = false
-                        }
-                    }
-                }) {
-                    Icon(Icons.Outlined.Favorite, contentDescription = null)
-                }
-            }
-        },
         bottomBar = {
             NavigationBar {
 
@@ -80,6 +60,46 @@ fun MainScreen() {
             }
         }
     ) {
-
+        val feedPost = viewModel.feedPosts.observeAsState(listOf())
+        LazyColumn(
+            modifier = Modifier.padding(it),
+            contentPadding = PaddingValues(
+                start = 8.dp,
+                top = 16.dp,
+                end = 8.dp,
+                bottom = 36.dp
+            ), verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(items = feedPost.value, key = { it.id }) { feedPost ->
+                val dismissState = rememberDismissState()
+                if (dismissState.isDismissed(DismissDirection.EndToStart)) {
+                    viewModel.remove(feedPost)
+                }
+                SwipeToDismiss(
+                    modifier = Modifier.animateItemPlacement(),
+                    state = dismissState,
+                    background = {},
+                    directions = setOf(DismissDirection.EndToStart)
+                ) {
+                    PostCard(
+                        modifier = Modifier.padding(8.dp),
+                        feedPost = feedPost,
+                        onViewsClickListener = { StatisticItem ->
+                            viewModel.updateCount(feedPost, StatisticItem)
+                        },
+                        onSharesClickListener = { StatisticItem ->
+                            viewModel.updateCount(feedPost, StatisticItem)
+                        },
+                        onCommentsClickListener = { StatisticItem ->
+                            viewModel.updateCount(feedPost, StatisticItem)
+                        },
+                        onLikesClickListener = { StatisticItem ->
+                            viewModel.updateCount(feedPost, StatisticItem)
+                        }
+                    )
+                }
+            }
+        }
     }
+
 }
