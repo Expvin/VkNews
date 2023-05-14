@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,6 +23,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.expv1n.vknews.MainViewModel
 import com.expv1n.vknews.navigation.AppNavGraph
+import com.expv1n.vknews.navigation.NavigationState
+import com.expv1n.vknews.navigation.Screen
+import com.expv1n.vknews.navigation.rememberNavigationState
 
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
@@ -29,52 +33,43 @@ import com.expv1n.vknews.navigation.AppNavGraph
 @Composable
 fun MainVkNewsScreen(viewModel: MainViewModel) {
 
-    val navHostController = rememberNavController()
+    val navigationState = rememberNavigationState()
 
-    Scaffold(
-        bottomBar = {
-            NavigationBar {
+    Scaffold(bottomBar = {
+        NavigationBar {
 
-                val navBackStackEntry by navHostController.currentBackStackEntryAsState()
-                val currentRout = navBackStackEntry?.destination?.route
+            val navBackStackEntry by navigationState.navHostController.currentBackStackEntryAsState()
+            val currentRout = navBackStackEntry?.destination?.route
 
-                val items = listOf(
-                    NavigationItem.Home,
-                    NavigationItem.Favourite,
-                    NavigationItem.Profile
-                )
-                items.forEach { item ->
-                    NavigationBarItem(
-                        selected = currentRout == item.screen.route,
-                        onClick = { navHostController.navigate(item.screen.route) },
-                        icon = {
-                            Icon(item.vectorImage, contentDescription = null)
-                        },
-                        label = {
-                            Text(text = stringResource(id = item.titleResId))
-                        }
-                    )
-                }
+            val items = listOf(
+                NavigationItem.Home, NavigationItem.Favourite, NavigationItem.Profile
+            )
+            items.forEach { item ->
+                NavigationBarItem(selected = currentRout == item.screen.route,
+                    onClick = { navigationState.navigateTo(item.screen.route) },
+                    icon = {
+                        Icon(item.vectorImage, contentDescription = null)
+                    },
+                    label = {
+                        Text(text = stringResource(id = item.titleResId))
+                    })
             }
         }
-    ) { paddingValues ->
-        AppNavGraph(
-            navHostController = navHostController,
+    }) { paddingValues ->
+        AppNavGraph(navHostController = navigationState.navHostController,
             homeScreenContent = {
                 HomeScreen(
-                    viewModel = viewModel,
-                    paddingValues = paddingValues
+                    viewModel = viewModel, paddingValues = paddingValues
                 )
             },
             favouriteScreenContent = { TextCounter(name = "Favourite") },
-            profileScreenContent = { TextCounter(name = "Profile") }
-        )
+            profileScreenContent = { TextCounter(name = "Profile") })
     }
 }
 
 @Composable
 private fun TextCounter(name: String) {
-    var counter by remember {
+    var counter by rememberSaveable {
         mutableStateOf(0)
     }
     Text(

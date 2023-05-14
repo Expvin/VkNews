@@ -1,8 +1,11 @@
 package com.expv1n.vknews.ui.theme
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.darkColors
+import androidx.compose.material.lightColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -18,20 +21,18 @@ import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
     primary = Black900,
-    primaryContainer = Black900,
+    primaryContainer = Black500,
     secondary = Black900,
     onPrimary = Color.White,
     onSecondary = Black500
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color.White,
+    primary = Black900,
     primaryContainer = Color.White,
-    secondary = Color.White,
-    onPrimary = Black900,
+    secondary = Black500,
+    onPrimary = Color.White,
     onSecondary = Black500
-
-
 )
 
 @Composable
