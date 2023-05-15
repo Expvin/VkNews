@@ -1,6 +1,7 @@
 package com.expv1n.vknews.ui.theme
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -13,6 +14,8 @@ import androidx.compose.material.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.expv1n.vknews.NewsFeedViewModel
@@ -53,8 +56,14 @@ private fun FeedPost(
     onCommentsClickListener: (FeedPost) -> Unit
 ) {
     LazyColumn(
-        modifier = Modifier.padding(paddingValues), contentPadding = PaddingValues(
-            start = 8.dp, top = 8.dp, end = 8.dp, bottom = 36.dp
+        modifier = Modifier
+            .padding(paddingValues)
+            .background(color = Color.LightGray),
+        contentPadding = PaddingValues(
+            start = 8.dp,
+            top = 8.dp,
+            end = 8.dp,
+            bottom = 36.dp
         ), verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(items = posts, key = { it.id }) { feedPost ->
@@ -68,7 +77,7 @@ private fun FeedPost(
                 background = {},
                 directions = setOf(DismissDirection.EndToStart)
             ) {
-                PostCard(modifier = Modifier.padding(8.dp),
+                PostCard(modifier = Modifier,
                     feedPost = feedPost,
                     onViewsClickListener = { StatisticItem ->
                         viewModel.updateCount(feedPost, StatisticItem)
