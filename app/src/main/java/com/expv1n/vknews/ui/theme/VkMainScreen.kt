@@ -1,6 +1,7 @@
 package com.expv1n.vknews.ui.theme
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -36,7 +37,7 @@ fun MainVkNewsScreen() {
     }
 
     Scaffold(bottomBar = {
-        NavigationBar {
+        NavigationBar(containerColor = Color.White) {
 
             val navBackStackEntry by navigationState.navHostController.currentBackStackEntryAsState()
             val items = listOf(
