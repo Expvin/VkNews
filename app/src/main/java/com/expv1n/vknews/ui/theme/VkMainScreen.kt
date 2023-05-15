@@ -1,17 +1,15 @@
 package com.expv1n.vknews.ui.theme
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -20,20 +18,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import com.expv1n.vknews.MainViewModel
+import com.expv1n.vknews.domain.FeedPost
 import com.expv1n.vknews.navigation.AppNavGraph
-import com.expv1n.vknews.navigation.NavigationState
-import com.expv1n.vknews.navigation.Screen
 import com.expv1n.vknews.navigation.rememberNavigationState
 
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun MainVkNewsScreen(viewModel: MainViewModel) {
+fun MainVkNewsScreen() {
 
     val navigationState = rememberNavigationState()
+
+    val commentsToPost: MutableState<FeedPost?> = remember {
+        mutableStateOf(null)
+    }
 
     Scaffold(bottomBar = {
         NavigationBar {
@@ -58,9 +56,19 @@ fun MainVkNewsScreen(viewModel: MainViewModel) {
     }) { paddingValues ->
         AppNavGraph(navHostController = navigationState.navHostController,
             homeScreenContent = {
-                HomeScreen(
-                    viewModel = viewModel, paddingValues = paddingValues
-                )
+                if (commentsToPost.value == null) {
+                    HomeScreen(
+                        paddingValues = paddingValues,
+                        onCommentsClickListener = {
+                            commentsToPost.value = it
+                        }
+                    )
+                } else {
+                    CommentsScreen(
+                        onBackPressed = { commentsToPost.value = null },
+                        feedPost = commentsToPost.value!!
+                    )
+                }
             },
             favouriteScreenContent = { TextCounter(name = "Favourite") },
             profileScreenContent = { TextCounter(name = "Profile") })

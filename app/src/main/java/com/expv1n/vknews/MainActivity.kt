@@ -11,7 +11,6 @@ import com.expv1n.vknews.ui.theme.VkNewsTheme
 
 class MainActivity : ComponentActivity() {
 
-    private val viewModel by viewModels<MainViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -19,7 +18,7 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainVkNewsScreen(viewModel = viewModel)
+                    MainVkNewsScreen()
                 }
             }
         }
