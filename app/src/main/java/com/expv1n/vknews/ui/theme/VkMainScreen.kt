@@ -32,10 +32,6 @@ fun MainVkNewsScreen() {
 
     val navigationState = rememberNavigationState()
 
-    val commentsToPost: MutableState<FeedPost?> = remember {
-        mutableStateOf(null)
-    }
-
     Scaffold(bottomBar = {
         NavigationBar(containerColor = Color.White) {
 
@@ -68,14 +64,13 @@ fun MainVkNewsScreen() {
             feedPostScreenContent = {
                 HomeScreen(paddingValues = paddingValues,
                     onCommentsClickListener = {
-                        commentsToPost.value = it
-                        navigationState.navigateToComments()
+                        navigationState.navigateToComments(feedPost = it)
                     })
             },
-            commentsScreenContent = {
+            commentsScreenContent = { feedPost ->
                 CommentsScreen(
                     onBackPressed = { navigationState.navHostController.popBackStack() },
-                    feedPost = commentsToPost.value!!
+                    feedPost = feedPost
                 )
             },
             favouriteScreenContent = { TextCounter(name = "Favourite") },

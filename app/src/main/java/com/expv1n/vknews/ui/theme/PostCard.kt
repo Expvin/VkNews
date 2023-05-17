@@ -100,7 +100,7 @@ private fun PostHeader(
         ) {
             Text(
                 text = feedPost.communityName,
-                color = MaterialTheme.colorScheme.onPrimary
+                color = MaterialTheme.colorScheme.onSecondary
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(

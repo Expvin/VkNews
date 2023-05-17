@@ -66,7 +66,7 @@ fun CommentsScreen(
                     start = 8.dp,
                     top = 8.dp,
                     end = 8.dp,
-                    bottom = 76.dp
+                    bottom = 90.dp
                 ), verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(items = currentState.comments, key = { it.id }) { comment ->
