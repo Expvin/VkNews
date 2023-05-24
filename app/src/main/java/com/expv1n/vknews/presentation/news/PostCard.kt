@@ -1,4 +1,4 @@
-package com.expv1n.vknews.ui.theme
+package com.expv1n.vknews.presentation.news
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

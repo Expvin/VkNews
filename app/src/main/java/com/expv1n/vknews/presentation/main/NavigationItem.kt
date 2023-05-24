@@ -1,4 +1,4 @@
-package com.expv1n.vknews.ui.theme
+package com.expv1n.vknews.presentation.main
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Favorite

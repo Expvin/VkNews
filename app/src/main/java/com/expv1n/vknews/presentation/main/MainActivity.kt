@@ -1,4 +1,4 @@
-package com.expv1n.vknews
+package com.expv1n.vknews.presentation.main
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,9 +8,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.expv1n.vknews.ui.theme.AuthState
-import com.expv1n.vknews.ui.theme.LoginScreen
-import com.expv1n.vknews.ui.theme.MainScreen
 import com.expv1n.vknews.ui.theme.VkNewsTheme
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.auth.VKScope

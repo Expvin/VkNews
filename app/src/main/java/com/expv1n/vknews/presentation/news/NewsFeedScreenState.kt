@@ -1,4 +1,4 @@
-package com.expv1n.vknews.ui.theme
+package com.expv1n.vknews.presentation.news
 
 import com.expv1n.vknews.domain.FeedPost
 

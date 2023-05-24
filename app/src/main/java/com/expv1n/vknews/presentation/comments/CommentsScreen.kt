@@ -1,4 +1,4 @@
-package com.expv1n.vknews.ui.theme
+package com.expv1n.vknews.presentation.comments
 
 
 import androidx.compose.foundation.Image
@@ -34,8 +34,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.expv1n.vknews.CommentsViewModel
-import com.expv1n.vknews.CommentsViewModelFactory
 import com.expv1n.vknews.R
 import com.expv1n.vknews.domain.FeedPost
 import com.expv1n.vknews.domain.PostComment
