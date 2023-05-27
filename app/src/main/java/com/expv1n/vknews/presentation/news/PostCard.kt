@@ -34,6 +34,7 @@ import com.expv1n.vknews.R
 import com.expv1n.vknews.domain.FeedPost
 import com.expv1n.vknews.domain.StatisticItem
 import com.expv1n.vknews.domain.StatisticType
+import com.expv1n.vknews.ui.theme.DarkRed
 import java.lang.IllegalStateException
 
 @Composable
@@ -74,7 +75,8 @@ fun PostCard(
                 onViewsClickListener = onViewsClickListener,
                 onSharesClickListener = onSharesClickListener,
                 onCommentsClickListener = onCommentsClickListener,
-                onLikesClickListener = onLikesClickListener
+                onLikesClickListener = onLikesClickListener,
+                isFavorite = feedPost.isFavorite
             )
         }
     }
@@ -123,7 +125,8 @@ private fun Statistics(
     onViewsClickListener: (StatisticItem) -> Unit,
     onSharesClickListener: (StatisticItem) -> Unit,
     onCommentsClickListener: (StatisticItem) -> Unit,
-    onLikesClickListener: (StatisticItem) -> Unit
+    onLikesClickListener: (StatisticItem) -> Unit,
+    isFavorite: Boolean
 ) {
     Row {
         Row(
@@ -145,7 +148,7 @@ private fun Statistics(
             val sharesItem = statistics.getItemByType(StatisticType.SHARES)
             IconWithText(
                 iconResId = R.drawable.ic_share,
-                text = sharesItem.count.toString(),
+                text = formatStatisticCount(sharesItem.count),
                 onItemClickListener = {
                     onSharesClickListener(sharesItem)
                 }
@@ -153,23 +156,33 @@ private fun Statistics(
             val commentItem = statistics.getItemByType(StatisticType.COMMENTS)
             IconWithText(
                 iconResId = R.drawable.ic_comment,
-                text = commentItem.count.toString(),
+                text = formatStatisticCount(commentItem.count),
                 onItemClickListener = {
                     onCommentsClickListener(commentItem)
                 }
             )
             val likesItem = statistics.getItemByType(StatisticType.LIKES)
             IconWithText(
-                iconResId = R.drawable.ic_like,
-                text = likesItem.count.toString(),
+                iconResId = if (isFavorite) R.drawable.ic_like_set else R.drawable.ic_like,
+                text = formatStatisticCount(likesItem.count),
                 onItemClickListener = {
                     onLikesClickListener(likesItem)
-                }
+                },
+                tint = if (isFavorite) DarkRed else MaterialTheme.colorScheme.onSecondary
             )
         }
     }
 }
 
+private fun formatStatisticCount(count: Int): String {
+    return if (count > 100_000) {
+        String.format("%sK", (count/1000))
+    } else if (count > 1000) {
+        String.format("%.1fK", (count/1000f))
+    } else {
+        count.toString()
+    }
+}
 private fun List<StatisticItem>.getItemByType(type: StatisticType): StatisticItem {
     return this.find { it.type == type } ?: throw IllegalStateException()
 }
@@ -178,7 +191,8 @@ private fun List<StatisticItem>.getItemByType(type: StatisticType): StatisticIte
 private fun IconWithText(
     iconResId: Int,
     text: String,
-    onItemClickListener: () -> Unit
+    onItemClickListener: () -> Unit,
+    tint: Color = MaterialTheme.colorScheme.onSecondary
 ) {
     Row(
         modifier = Modifier.clickable {
@@ -187,9 +201,10 @@ private fun IconWithText(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
+            modifier = Modifier.size(25.dp),
             painter = painterResource(id = iconResId),
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSecondary
+            tint = tint
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
