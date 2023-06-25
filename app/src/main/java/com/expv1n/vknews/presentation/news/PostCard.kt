@@ -41,8 +41,6 @@ import java.lang.IllegalStateException
 fun PostCard(
     modifier: Modifier = Modifier,
     feedPost: FeedPost,
-    onViewsClickListener: (StatisticItem) -> Unit,
-    onSharesClickListener: (StatisticItem) -> Unit,
     onCommentsClickListener: (StatisticItem) -> Unit,
     onLikesClickListener: (StatisticItem) -> Unit
 ) {
@@ -59,7 +57,7 @@ fun PostCard(
         ) {
             PostHeader(feedPost)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = feedPost.contentText)
+            Text(text = feedPost.contentText, color = MaterialTheme.colorScheme.onSecondary)
             Spacer(modifier = Modifier.height(8.dp))
             AsyncImage(
                 model = feedPost.contentImageUrl,
@@ -72,8 +70,6 @@ fun PostCard(
             Spacer(modifier = Modifier.height(8.dp))
             Statistics(
                 statistics = feedPost.statistics,
-                onViewsClickListener = onViewsClickListener,
-                onSharesClickListener = onSharesClickListener,
                 onCommentsClickListener = onCommentsClickListener,
                 onLikesClickListener = onLikesClickListener,
                 isFavorite = feedPost.isLiked
@@ -87,8 +83,7 @@ private fun PostHeader(
     feedPost: FeedPost
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
             model = feedPost.communityImageUrl,
@@ -102,13 +97,11 @@ private fun PostHeader(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = feedPost.communityName,
-                color = MaterialTheme.colorScheme.onSecondary
+                text = feedPost.communityName, color = MaterialTheme.colorScheme.onSecondary
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = feedPost.publicationDate,
-                color = MaterialTheme.colorScheme.onSecondary
+                text = feedPost.publicationDate, color = MaterialTheme.colorScheme.onSecondary
             )
         }
         Icon(
@@ -122,8 +115,6 @@ private fun PostHeader(
 @Composable
 private fun Statistics(
     statistics: List<StatisticItem>,
-    onViewsClickListener: (StatisticItem) -> Unit,
-    onSharesClickListener: (StatisticItem) -> Unit,
     onCommentsClickListener: (StatisticItem) -> Unit,
     onLikesClickListener: (StatisticItem) -> Unit,
     isFavorite: Boolean
@@ -133,34 +124,21 @@ private fun Statistics(
             modifier = Modifier.weight(1f)
         ) {
             val viewsItem = statistics.getItemByType(StatisticType.VIEWS)
-            IconWithText(
-                iconResId = R.drawable.ic_views_count,
-                text = formatStatisticCount(viewsItem.count),
-                onItemClickListener = {
-                    onViewsClickListener(viewsItem)
-                }
-            )
+            IconWithText(iconResId = R.drawable.ic_views_count,
+                text = formatStatisticCount(viewsItem.count))
         }
         Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.SpaceBetween
         ) {
             val sharesItem = statistics.getItemByType(StatisticType.SHARES)
-            IconWithText(
-                iconResId = R.drawable.ic_share,
-                text = formatStatisticCount(sharesItem.count),
-                onItemClickListener = {
-                    onSharesClickListener(sharesItem)
-                }
-            )
+            IconWithText(iconResId = R.drawable.ic_share,
+                text = formatStatisticCount(sharesItem.count))
             val commentItem = statistics.getItemByType(StatisticType.COMMENTS)
-            IconWithText(
-                iconResId = R.drawable.ic_comment,
+            IconWithText(iconResId = R.drawable.ic_comment,
                 text = formatStatisticCount(commentItem.count),
                 onItemClickListener = {
                     onCommentsClickListener(commentItem)
-                }
-            )
+                })
             val likesItem = statistics.getItemByType(StatisticType.LIKES)
             IconWithText(
                 iconResId = if (isFavorite) R.drawable.ic_like_set else R.drawable.ic_like,
@@ -176,13 +154,14 @@ private fun Statistics(
 
 private fun formatStatisticCount(count: Int): String {
     return if (count > 100_000) {
-        String.format("%sK", (count/1000))
+        String.format("%sK", (count / 1000))
     } else if (count > 1000) {
-        String.format("%.1fK", (count/1000f))
+        String.format("%.1fK", (count / 1000f))
     } else {
         count.toString()
     }
 }
+
 private fun List<StatisticItem>.getItemByType(type: StatisticType): StatisticItem {
     return this.find { it.type == type } ?: throw IllegalStateException()
 }
@@ -191,24 +170,25 @@ private fun List<StatisticItem>.getItemByType(type: StatisticType): StatisticIte
 private fun IconWithText(
     iconResId: Int,
     text: String,
-    onItemClickListener: () -> Unit,
+    onItemClickListener: (() -> Unit)? = null,
     tint: Color = MaterialTheme.colorScheme.onSecondary
 ) {
-    Row(
-        modifier = Modifier.clickable {
+    val modifier = if (onItemClickListener == null) {
+        Modifier
+    } else {
+        Modifier.clickable {
             onItemClickListener()
-        },
-        verticalAlignment = Alignment.CenterVertically
+        }
+    }
+    Row(
+        modifier = modifier, verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            painter = painterResource(id = iconResId),
-            contentDescription = null,
-            tint = tint
+            painter = painterResource(id = iconResId), contentDescription = null, tint = tint
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(
-            text = text,
-            color = MaterialTheme.colorScheme.onSecondary
+            text = text, color = MaterialTheme.colorScheme.onSecondary
         )
     }
 }

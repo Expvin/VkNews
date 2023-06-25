@@ -1,7 +1,9 @@
 package com.expv1n.vknews.data.mapper
 
+import com.expv1n.vknews.data.model.CommentsResponseDto
 import com.expv1n.vknews.data.model.NewsFeedResponseDto
 import com.expv1n.vknews.domain.FeedPost
+import com.expv1n.vknews.domain.PostComment
 import com.expv1n.vknews.domain.StatisticItem
 import com.expv1n.vknews.domain.StatisticType
 import java.text.SimpleDateFormat
@@ -23,7 +25,7 @@ class NewsFeedMapper {
                 id = post.id,
                 communityId = post.communityId,
                 communityName = group.name,
-                publicationDate = mapTimestampToDate(post.date * 1000),
+                publicationDate = mapTimestampToDate(post.date),
                 communityImageUrl = group.imageUrl,
                 contentText = post.text,
                 contentImageUrl = post.attachments?.firstOrNull()?.photo?.photoUrls?.lastOrNull()?.url,
@@ -39,8 +41,31 @@ class NewsFeedMapper {
         }
         return result
     }
+
+    fun mapResponseToComments(response: CommentsResponseDto): List<PostComment> {
+        val result = mutableListOf<PostComment>()
+
+        val comments = response.content.comments
+        val profiles = response.content.profiles
+
+        for (comment in comments) {
+            if (comment.text.isBlank()) continue
+            val author = profiles.firstOrNull {it.id == comment.authorId} ?: continue
+            val post = PostComment(
+                id = comment.id,
+                authorName = "${author.firstName} ${author.lastName}",
+                authorAvatarUrl = author.avatarUrl,
+                commentText = comment.text,
+                publicationDate = mapTimestampToDate(comment.date)
+            )
+            result.add(post)
+        }
+
+        return result
+    }
+
     private fun mapTimestampToDate(timestamp: Long): String {
-        val date = Date(timestamp)
+        val date = Date(timestamp * 1000)
         return SimpleDateFormat("d MMMM yyyy, hh:mm", Locale.getDefault()).format(date)
     }
 

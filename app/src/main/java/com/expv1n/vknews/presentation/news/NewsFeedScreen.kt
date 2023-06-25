@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -17,6 +18,7 @@ import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,7 +35,7 @@ fun NewsFeedScreen(
     onCommentsClickListener: (FeedPost) -> Unit
 ) {
     val viewModel: NewsFeedViewModel = viewModel()
-    val screenState = viewModel.screenState.observeAsState(NewsFeedScreenState.Initial)
+    val screenState = viewModel.screenState.collectAsState(NewsFeedScreenState.Initial)
 
     when (val currentState = screenState.value) {
         is NewsFeedScreenState.Posts -> {
@@ -48,6 +50,18 @@ fun NewsFeedScreen(
 
         NewsFeedScreenState.Initial -> {
 
+        }
+
+        NewsFeedScreenState.Loading -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = DarkBlue
+                )
+            }
         }
     }
 
@@ -86,12 +100,6 @@ private fun FeedPost(
             ) {
                 PostCard(modifier = Modifier,
                     feedPost = feedPost,
-                    onViewsClickListener = { StatisticItem ->
-                        viewModel.updateCount(feedPost, StatisticItem)
-                    },
-                    onSharesClickListener = { StatisticItem ->
-                        viewModel.updateCount(feedPost, StatisticItem)
-                    },
                     onCommentsClickListener = {
                         onCommentsClickListener(feedPost)
                     },
@@ -102,13 +110,13 @@ private fun FeedPost(
         }
         item {
             if (nextDataIsLoading) {
-                Box (
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
-                        ) {
+                ) {
                     CircularProgressIndicator(
                         color = DarkBlue
                     )
