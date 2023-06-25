@@ -54,17 +54,12 @@ fun NewsFeedScreen(
 
         NewsFeedScreenState.Loading -> {
             Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
+                modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(
-                    color = DarkBlue
-                )
+                CircularProgressIndicator(color = DarkBlue)
             }
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)

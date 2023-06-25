@@ -4,10 +4,12 @@ package com.expv1n.vknews.presentation.comments
 import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
@@ -27,6 +30,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +45,7 @@ import coil.compose.AsyncImage
 import com.expv1n.vknews.R
 import com.expv1n.vknews.domain.FeedPost
 import com.expv1n.vknews.domain.PostComment
+import com.expv1n.vknews.ui.theme.DarkBlue
 
 
 @Composable
@@ -52,30 +57,42 @@ fun CommentsScreen(
             feedPost, LocalContext.current.applicationContext as Application
         )
     )
-    val screenState = viewModel.screenState.observeAsState(CommentsScreenState.Initial)
+    val screenState = viewModel.screenState.collectAsState(CommentsScreenState.Initial)
     val currentState = screenState.value
-    if (currentState is CommentsScreenState.Comments) {
-        Scaffold(topBar = {
-            TopAppBar(title = { Text(text = stringResource(R.string.comments)) },
-                backgroundColor = MaterialTheme.colorScheme.onPrimary,
-                navigationIcon = {
-                    IconButton(onClick = { onBackPressed() }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = null)
+    when (currentState) {
+        is CommentsScreenState.Comments -> {
+            Scaffold(topBar = {
+                TopAppBar(title = { Text(text = stringResource(R.string.comments)) },
+                    backgroundColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIcon = {
+                        IconButton(onClick = { onBackPressed() }) {
+                            Icon(Icons.Filled.ArrowBack, contentDescription = null)
+                        }
+                    })
+            }) { paddingValues ->
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .background(color = Color.LightGray),
+                    contentPadding = PaddingValues(
+                        start = 8.dp, top = 8.dp, end = 8.dp, bottom = 90.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(items = currentState.comments, key = { it.id }) { comment ->
+                        CommentItem(comment = comment)
                     }
-                })
-        }) { paddingValues ->
-            LazyColumn(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .background(color = Color.LightGray),
-                contentPadding = PaddingValues(
-                    start = 8.dp, top = 8.dp, end = 8.dp, bottom = 90.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(items = currentState.comments, key = { it.id }) { comment ->
-                    CommentItem(comment = comment)
                 }
+            }
+        }
+
+        CommentsScreenState.Initial -> {}
+
+        CommentsScreenState.Loading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = DarkBlue)
             }
         }
     }

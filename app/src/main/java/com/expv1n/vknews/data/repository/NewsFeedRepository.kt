@@ -13,11 +13,13 @@ import com.vk.api.sdk.VKPreferencesKeyValueStorage
 import com.vk.api.sdk.auth.VKAccessToken
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 
@@ -47,8 +49,10 @@ class NewsFeedRepository(application: Application) {
             _feedPosts.addAll(posts)
             emit(feedPosts)
         }
-
-    }
+    }.retry {
+            delay(TIME_OUT_MILLIS)
+            true
+        }
 
     private val apiService = ApiFactory.apiService
     private val mapper = NewsFeedMapper()
@@ -82,13 +86,16 @@ class NewsFeedRepository(application: Application) {
 
     }
 
-    suspend fun getComments(feedPost: FeedPost): List<PostComment> {
+    fun getComments(feedPost: FeedPost): Flow<List<PostComment>> = flow {
         val comments = apiService.getComments(
             token = getAccessToken(),
             ownerId = feedPost.communityId,
             postId = feedPost.id
         )
-        return mapper.mapResponseToComments(comments)
+        emit(mapper.mapResponseToComments(comments))
+    }.retry {
+        delay(TIME_OUT_MILLIS)
+        true
     }
 
     private fun getAccessToken(): String {
@@ -120,4 +127,7 @@ class NewsFeedRepository(application: Application) {
         refreshedListFlow.emit(feedPosts)
     }
 
+    companion object {
+        private const val TIME_OUT_MILLIS = 5_000L
+    }
 }
