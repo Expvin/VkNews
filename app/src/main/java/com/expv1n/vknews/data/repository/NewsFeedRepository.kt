@@ -1,7 +1,6 @@
 package com.expv1n.vknews.data.repository
 
 import android.app.Application
-import android.util.Log
 import com.expv1n.vknews.data.mapper.NewsFeedMapper
 import com.expv1n.vknews.data.network.ApiFactory
 import com.expv1n.vknews.domain.FeedPost
@@ -9,6 +8,7 @@ import com.expv1n.vknews.domain.PostComment
 import com.expv1n.vknews.domain.StatisticItem
 import com.expv1n.vknews.domain.StatisticType
 import com.expv1n.vknews.extensions.mergeWith
+import com.expv1n.vknews.domain.AuthState
 import com.vk.api.sdk.VKPreferencesKeyValueStorage
 import com.vk.api.sdk.auth.VKAccessToken
 import kotlinx.coroutines.CoroutineScope
@@ -20,13 +20,13 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retry
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 
 class NewsFeedRepository(application: Application) {
 
     private val storage = VKPreferencesKeyValueStorage(application)
-    private val token = VKAccessToken.restore(storage)
+    private val token
+        get() = VKAccessToken.restore(storage)
 
     private val nextDataNeededEvent = MutableSharedFlow<Unit>(replay = 1)
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
@@ -54,6 +54,21 @@ class NewsFeedRepository(application: Application) {
             true
         }
 
+    private val checkAuthStateFlow = MutableSharedFlow<Unit>(replay = 1)
+    val authStateFlow = flow {
+        checkAuthStateFlow.emit(Unit)
+        checkAuthStateFlow.collect {
+            val currentToken = token
+            val loggedIn = currentToken != null && currentToken.isValid
+            val state = if (loggedIn) AuthState.Authorized else AuthState.NotAuthorized
+            emit(state)
+        }
+    }.stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Lazily,
+        initialValue = AuthState.Initial
+    )
+
     private val apiService = ApiFactory.apiService
     private val mapper = NewsFeedMapper()
 
@@ -62,6 +77,7 @@ class NewsFeedRepository(application: Application) {
         get() = _feedPosts.toList()
 
     private var nextFrom: String? = null
+
 
     val recommendation: StateFlow<List<FeedPost>> = loadedListFlow
         .mergeWith(refreshedListFlow)
@@ -73,6 +89,10 @@ class NewsFeedRepository(application: Application) {
 
     suspend fun loadNextDate() {
         nextDataNeededEvent.emit(Unit)
+    }
+
+    suspend fun checkAuthState() {
+        checkAuthStateFlow.emit(Unit)
     }
 
     suspend fun deletePost(feedPost: FeedPost) {
