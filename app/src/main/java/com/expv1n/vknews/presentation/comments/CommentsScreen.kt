@@ -1,7 +1,6 @@
 package com.expv1n.vknews.presentation.comments
 
 
-import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,12 +30,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -45,17 +42,16 @@ import coil.compose.AsyncImage
 import com.expv1n.vknews.R
 import com.expv1n.vknews.domain.FeedPost
 import com.expv1n.vknews.domain.PostComment
+import com.expv1n.vknews.presentation.ViewModelFactory
 import com.expv1n.vknews.ui.theme.DarkBlue
-
 
 @Composable
 fun CommentsScreen(
+    viewModelFactory: ViewModelFactory,
     feedPost: FeedPost, onBackPressed: () -> Unit
 ) {
     val viewModel: CommentsViewModel = viewModel(
-        factory = CommentsViewModelFactory(
-            feedPost, LocalContext.current.applicationContext as Application
-        )
+        factory = viewModelFactory
     )
     val screenState = viewModel.screenState.collectAsState(CommentsScreenState.Initial)
     val currentState = screenState.value

@@ -1,10 +1,8 @@
 package com.expv1n.vknews.presentation.news
 
-import android.app.Application
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.expv1n.vknews.data.repository.NewsFeedRepositoryImp
 import com.expv1n.vknews.domain.FeedPost
 import com.expv1n.vknews.domain.usecases.ChangeLikeStatusUseCase
 import com.expv1n.vknews.domain.usecases.DeletePostUseCase
@@ -17,15 +15,17 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class NewsFeedViewModel(application: Application) : AndroidViewModel(application) {
+class NewsFeedViewModel @Inject constructor(
 
-    private val repository = NewsFeedRepositoryImp(application)
+    private val getRecommendationUseCase: GetRecommendationUseCase,
+    private val loadNextDataUseCase: LoadNextDataUseCase,
+    private val changeLikeStatusUseCase: ChangeLikeStatusUseCase,
+    private val deletePostUseCase: DeletePostUseCase
+) : ViewModel() {
 
-    private val getRecommendationUseCase = GetRecommendationUseCase(repository)
-    private val loadNextDataUseCase = LoadNextDataUseCase(repository)
-    private val changeLikeStatusUseCase = ChangeLikeStatusUseCase(repository)
-    private val deletePostUseCase = DeletePostUseCase(repository)
+
     private val recommendationFlow = getRecommendationUseCase()
     private val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
         Log.d("NewsFeedViewModel", "Exception caught")
