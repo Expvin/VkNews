@@ -9,6 +9,7 @@ import com.expv1n.vknews.domain.StatisticItem
 import com.expv1n.vknews.domain.StatisticType
 import com.expv1n.vknews.extensions.mergeWith
 import com.expv1n.vknews.domain.AuthState
+import com.expv1n.vknews.domain.repository.NewsFeedRepository
 import com.vk.api.sdk.VKPreferencesKeyValueStorage
 import com.vk.api.sdk.auth.VKAccessToken
 import kotlinx.coroutines.CoroutineScope
@@ -22,7 +23,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
 
-class NewsFeedRepository(application: Application) {
+class NewsFeedRepositoryImp(application: Application): NewsFeedRepository {
 
     private val storage = VKPreferencesKeyValueStorage(application)
     private val token
@@ -55,7 +56,7 @@ class NewsFeedRepository(application: Application) {
         }
 
     private val checkAuthStateFlow = MutableSharedFlow<Unit>(replay = 1)
-    val authStateFlow = flow {
+    private val authStateFlow = flow {
         checkAuthStateFlow.emit(Unit)
         checkAuthStateFlow.collect {
             val currentToken = token
@@ -79,7 +80,7 @@ class NewsFeedRepository(application: Application) {
     private var nextFrom: String? = null
 
 
-    val recommendation: StateFlow<List<FeedPost>> = loadedListFlow
+    private val recommendation: StateFlow<List<FeedPost>> = loadedListFlow
         .mergeWith(refreshedListFlow)
         .stateIn(
             scope = coroutineScope,
@@ -87,15 +88,11 @@ class NewsFeedRepository(application: Application) {
             initialValue = feedPosts
         )
 
-    suspend fun loadNextDate() {
-        nextDataNeededEvent.emit(Unit)
-    }
-
-    suspend fun checkAuthState() {
+    override suspend fun checkAuthState() {
         checkAuthStateFlow.emit(Unit)
     }
 
-    suspend fun deletePost(feedPost: FeedPost) {
+    override suspend fun deletePost(feedPost: FeedPost) {
         apiService.ignorePost(
             token = getAccessToken(),
             ownerId = feedPost.communityId,
@@ -106,7 +103,12 @@ class NewsFeedRepository(application: Application) {
 
     }
 
-    fun getComments(feedPost: FeedPost): Flow<List<PostComment>> = flow {
+    override fun getAuthStateFlow() = authStateFlow
+
+    override fun getRecommendations() = recommendation
+
+
+    override fun getComments(feedPost: FeedPost): StateFlow<List<PostComment>> = flow {
         val comments = apiService.getComments(
             token = getAccessToken(),
             ownerId = feedPost.communityId,
@@ -116,13 +118,21 @@ class NewsFeedRepository(application: Application) {
     }.retry {
         delay(TIME_OUT_MILLIS)
         true
+    }.stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.Lazily,
+        initialValue = listOf()
+    )
+
+    override suspend fun loadNextData() {
+        nextDataNeededEvent.emit(Unit)
     }
 
     private fun getAccessToken(): String {
         return token?.accessToken ?: throw IllegalStateException("Token is null")
     }
 
-    suspend fun changeLikeStatus(feedPost: FeedPost) {
+    override suspend fun changeLikeStatus(feedPost: FeedPost) {
         val response = if (feedPost.isLiked) {
             apiService.deleteLike(
                 token = getAccessToken(),

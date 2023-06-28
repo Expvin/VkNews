@@ -3,31 +3,30 @@ package com.expv1n.vknews.presentation.news
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.expv1n.vknews.data.mapper.NewsFeedMapper
-import com.expv1n.vknews.data.network.ApiFactory
-import com.expv1n.vknews.data.repository.NewsFeedRepository
+import com.expv1n.vknews.data.repository.NewsFeedRepositoryImp
 import com.expv1n.vknews.domain.FeedPost
-import com.expv1n.vknews.domain.StatisticItem
+import com.expv1n.vknews.domain.usecases.ChangeLikeStatusUseCase
+import com.expv1n.vknews.domain.usecases.DeletePostUseCase
+import com.expv1n.vknews.domain.usecases.GetRecommendationUseCase
+import com.expv1n.vknews.domain.usecases.LoadNextDataUseCase
 import com.expv1n.vknews.extensions.mergeWith
-import com.vk.api.sdk.VKPreferencesKeyValueStorage
-import com.vk.api.sdk.auth.VKAccessToken
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class NewsFeedViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = NewsFeedRepository(application)
-    private val recommendationFlow = repository.recommendation
+    private val repository = NewsFeedRepositoryImp(application)
+
+    private val getRecommendationUseCase = GetRecommendationUseCase(repository)
+    private val loadNextDataUseCase = LoadNextDataUseCase(repository)
+    private val changeLikeStatusUseCase = ChangeLikeStatusUseCase(repository)
+    private val deletePostUseCase = DeletePostUseCase(repository)
+    private val recommendationFlow = getRecommendationUseCase()
     private val exceptionHandler = CoroutineExceptionHandler { coroutineContext, throwable ->
         Log.d("NewsFeedViewModel", "Exception caught")
     }
@@ -59,20 +58,20 @@ class NewsFeedViewModel(application: Application) : AndroidViewModel(application
                     posts = recommendationFlow.value, nextDataIsLoading = true
                 )
             )
-            repository.loadNextDate()
+            loadNextDataUseCase()
         }
 
     }
 
     fun changeLikeStatus(feedPost: FeedPost) {
         viewModelScope.launch(exceptionHandler) {
-            repository.changeLikeStatus(feedPost)
+            changeLikeStatusUseCase(feedPost)
         }
     }
 
     fun remove(feedPost: FeedPost) {
         viewModelScope.launch(exceptionHandler) {
-            repository.deletePost(feedPost)
+            deletePostUseCase(feedPost)
         }
     }
 
