@@ -8,12 +8,7 @@ class VkNewsApplication : Application() {
 
     val component by lazy {
         DaggerApplicationComponent.factory().create(
-            this,
-            FeedPost(
-                0, 1, "", "",
-                "", "",
-                "", listOf(), false
-            )
+            this
         )
     }
 
